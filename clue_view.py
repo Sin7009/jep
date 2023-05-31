@@ -4,6 +4,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+import keyboard
+import pyperclip
 
 class ClueView(QWidget):
     def __init__(self, root, parent, model):
@@ -40,7 +42,7 @@ class ClueView(QWidget):
     def populate_clue(self, question, answer):
         self.a_label.hide()
         self.q_label.setText(question)
-        self.a_label.setText("A: " + answer)
+        self.a_label.setText("Ответ: " + answer)
         self.q_label.show()
         self.model.reset_timer()
 
@@ -53,47 +55,58 @@ class ClueView(QWidget):
 
     def keyPressEvent(self, event):
         s = event.text()
-        if not self.model.wager_mode:
-            if s == ' ':
-                self.show_answer()
-            elif event.key() == Qt.Key_Escape:
-                self.model.mark_answered()
-                self.parent.show_categories()
-                self.root.update()
-            elif s.isdigit():
-                if 1 <= int(s) <= len(self.model.players):
-                    self.model.curr_player = int(s)-1
-            elif s == 'k':
-                self.model.correct_answer()
-                self.root.update()
-            elif s == 'j':
-                self.model.incorrect_answer()
-                self.root.update()
-            elif s == 'w':
-                print('wager on')
-                self.model.wager_mode = True
-                self.parent.setStyleSheet('border: 3px solid red')
-            elif s == '!':
-                self.model.reset_score()
-                self.root.update()
-            elif s == 'q':
-                self.model.exit_game()
-        else:
-            if s == ' ':
-                self.show_answer()
-            elif s.isdigit():
-                self.model.update_wager(int(s))
-            elif s == 'k':
-                self.model.correct_wager()
-                self.root.update()
-            elif s == 'j':
-                self.model.incorrect_wager()
-                self.root.update()
-            elif s == 'c':
-                self.model.reset_wager()
-            elif s == 'w':
-                print('wager off')
-                self.model.wager_mode = False
-                self.parent.setStyleSheet('')
-            elif s == 'q':
-                self.model.exit_game()
+
+        try:
+            if not self.model.wager_mode:
+                if s.isdigit():
+                    if 1 <= int(s) <= len(self.model.players):
+                        self.model.curr_player = int(s) - 1
+                elif keyboard.is_pressed('space') or keyboard.is_pressed(' '):
+                    self.show_answer()
+                elif keyboard.is_pressed('esc'):
+                    self.model.mark_answered()
+                    self.parent.show_categories()
+                    self.root.update()
+                elif keyboard.is_pressed('k') or keyboard.is_pressed('ф'):
+                    self.model.correct_answer()
+                    self.root.update()
+                elif keyboard.is_pressed('j') or keyboard.is_pressed('о'):
+                    self.model.incorrect_answer()
+                    self.root.update()
+                elif keyboard.is_pressed('w') or keyboard.is_pressed('ц'):
+                    print('wager on')
+                    self.model.wager_mode = True
+                    self.parent.setStyleSheet('border: 3px solid red')
+                elif keyboard.is_pressed('!') or keyboard.is_pressed('1'):
+                    self.model.reset_score()
+                    self.root.update()
+                elif keyboard.is_pressed('q') or keyboard.is_pressed('й'):
+                    confirm_exit = QMessageBox.question(self, 'Подтвердите выход', 'Вы действительно хотите выйти из игры?',
+                                                        QMessageBox.Yes | QMessageBox.No)
+                    if confirm_exit == QMessageBox.Yes:
+                        self.model.exit_game()
+            else:
+                    if s.isdigit():
+                        self.model.update_wager(int(s))
+                    elif keyboard.is_pressed('space') or keyboard.is_pressed(' '):
+                        self.show_answer()
+                    elif keyboard.is_pressed('k') or keyboard.is_pressed('ф'):
+                        self.model.correct_wager()
+                        self.root.update()
+                    elif keyboard.is_pressed('j') or keyboard.is_pressed('о'):
+                        self.model.incorrect_wager()
+                        self.root.update()
+                    elif keyboard.is_pressed('c') or keyboard.is_pressed('с'):
+                        self.model.reset_wager()
+                    elif keyboard.is_pressed('w') or keyboard.is_pressed('ц'):
+                        print('wager off')
+                        self.model.wager_mode = False
+                        self.parent.setStyleSheet('')
+                    elif keyboard.is_pressed('q') or keyboard.is_pressed('й'):
+                        confirm_exit = QMessageBox.question(self, 'Подтвердите выход', 'Вы действительно хотите выйти из игры?',
+                                                            QMessageBox.Yes | QMessageBox.No)
+                        if confirm_exit == QMessageBox.Yes:
+                            self.model.exit_game()
+        except ValueError:
+            # Обработка исключения, если клавиша не задействована или не сопоставлена
+            pass 

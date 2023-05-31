@@ -9,7 +9,7 @@ from threading import Timer
 
 from PyQt5.QtCore import QCoreApplication
 
-import game_data as gd
+import data as gd
 
 CLUE_MULT = 200
 ANSWER_TIME = 20

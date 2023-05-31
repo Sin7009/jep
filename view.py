@@ -5,6 +5,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+import keyboard
+import pyperclip
 
 from board import Board
 from player_view import PlayerBarWidget
@@ -16,7 +18,7 @@ class View(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Jep with the Bois')
+        self.setWindowTitle('Своя Игра')
         self.central_widget = QWidget(self)
         self.layout = QVBoxLayout()
         self.main_content = Board(self, self.central_widget, self.model)
@@ -37,17 +39,24 @@ class View(QMainWindow):
 
     def keyPressEvent(self, event):
         s = event.text()
-        if s.isdigit():
-            if 1 <= int(s) <= len(self.model.players):
-                self.model.curr_player = int(s)-1
-        elif s == 'k':
-            self.model.correct_answer()
-            self.update()
-        elif s == 'j':
-            self.model.incorrect_answer()
-            self.update()
-        elif s == '!':
-            self.model.reset_score()
-            self.update()
-        elif s == 'q':
-            self.model.exit_game()
+        try:
+            if s.isdigit():
+                if 1 <= int(s) <= len(self.model.players):
+                    self.model.curr_player = int(s) - 1
+            elif keyboard.is_pressed('k') or keyboard.is_pressed('ф'):
+                self.model.correct_answer()
+                self.update()
+            elif keyboard.is_pressed('j') or keyboard.is_pressed('о'):
+                self.model.incorrect_answer()
+                self.update()
+            elif keyboard.is_pressed('!'):
+                self.model.reset_score()
+                self.update()
+            elif keyboard.is_pressed('q') or keyboard.is_pressed('й'):
+                confirm_exit = QMessageBox.question(self, 'Подтвердите выход', 'Вы действительно хотите выйти из игры?',
+                                                    QMessageBox.Yes | QMessageBox.No)
+                if confirm_exit == QMessageBox.Yes:
+                    self.model.exit_game()
+            
+        except ValueError:
+            pass

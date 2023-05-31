@@ -4,6 +4,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+import keyboard
+import pyperclip
 
 class FinalJepView(QWidget):
     def __init__(self, root, parent, model):
@@ -71,42 +73,44 @@ class FinalJepView(QWidget):
         self.q_label.setText(self.model.clues[0][0].question)
         self.a_label.setText(self.model.clues[0][0].answer)
 
+    
     def keyPressEvent(self, event):
         s = event.text()
+
         if not self.model.wager_mode:
-            if s == ' ':
+            if s == ' ' or keyboard.is_pressed('space'):
                 if self.showing_cat:
                     self.show_clue()
                     self.showing_cat = False
                 else:
                     self.show_answer()
-            elif event.key() == Qt.Key_Escape:
+            elif event.key() == Qt.Key_Escape or keyboard.is_pressed('esc'):
                 self.root.update()
                 self.parent.show_winner()
             elif s.isdigit():
                 if 1 <= int(s) <= len(self.model.players):
-                    self.model.curr_player = int(s)-1
-            elif s == 's':
+                    self.model.curr_player = int(s) - 1
+            elif keyboard.is_pressed('s'):
                 self.model.play_sound('jeopardy_theme')
-            elif s == 'q':
+            elif keyboard.is_pressed('q') or keyboard.is_pressed('й'):
                 self.model.exit_game()
-            elif s == '!':
+            elif keyboard.is_pressed('!'):
                 self.model.reset_score()
                 self.root.update()
-            elif s == 'w':
+            elif keyboard.is_pressed('w') or keyboard.is_pressed('ц'):
                 self.model.wager_mode = True
         else:
             if s.isdigit():
                 self.model.update_wager(int(s))
-            elif s == 'k':
+            elif keyboard.is_pressed('k') or keyboard.is_pressed('ф'):
                 self.model.correct_wager()
                 self.root.update()
-            elif s == 'j':
+            elif keyboard.is_pressed('j') or keyboard.is_pressed('о'):
                 self.model.incorrect_wager()
                 self.root.update()
-            elif s == 'c':
+            elif keyboard.is_pressed('c') or keyboard.is_pressed('с'):
                 self.model.reset_wager()
-            elif s == 'w':
+            elif keyboard.is_pressed('w') or keyboard.is_pressed('ц'):
                 self.model.wager_mode = False
 
 
@@ -124,9 +128,9 @@ class WinnerView(QWidget):
         font_db.addApplicationFont("./resources/fonts/korina-bold.ttf")
         winner_font = QFont("Korinna", 56)
 
-        self.winner_label = QLabel("{} is the winner with ${}!".format(
-                                  self.model.players[self.model.winning_player].name, 
-                                  self.model.players[self.model.winning_player].score))
+        self.winner_label = QLabel("{} - победитель с ₽{}!".format(
+                                self.model.players[self.model.winning_player].name, 
+                                self.model.players[self.model.winning_player].score))
         self.winner_label.setFont(winner_font)
         self.winner_label.setStyleSheet("color: white;")
         self.winner_label.setAlignment(Qt.AlignCenter)
@@ -138,11 +142,18 @@ class WinnerView(QWidget):
         self.show()
 
     def update(self):
-        self.winner_label.setText("{} is the winner with ${}!".format(
-                                  self.model.players[self.model.winning_player].name, 
-                                  self.model.players[self.model.winning_player].score))
+        self.winner_label.setText("{} - победитель с ₽{}!".format(
+                                self.model.players[self.model.winning_player].name, 
+                                self.model.players[self.model.winning_player].score))
 
     def keyPressEvent(self, event):
         s = event.text()
-        if s == 'q':
-            self.model.exit_game()
+        try:
+            if keyboard.is_pressed('q') or keyboard.is_pressed('й'):
+                confirm_exit = QMessageBox.question(self, 'Подтвердите выход', 'Вы действительно хотите выйти из игры?',
+                                                    QMessageBox.Yes | QMessageBox.No)
+                if confirm_exit == QMessageBox.Yes:
+                    self.model.exit_game()
+        except ValueError:
+            # Обработка исключения, если клавиша не задействована или не сопоставлена
+            pass 

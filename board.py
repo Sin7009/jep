@@ -1,14 +1,18 @@
 # view.py
 #
 # The view for Jep board
+# Импорт необходимых модулей и классов
 from PyQt5.QtWidgets import QLabel, QStackedWidget
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
+import keyboard
+import pyperclip
 
 from category_view import CategoryView
 from clue_view import ClueView
 from final_jep_view import FinalJepView, WinnerView
 
+# Класс виджета для отображения доски
 class Board(QStackedWidget):
     def __init__(self, root, parent, model):
         super().__init__()
@@ -27,11 +31,13 @@ class Board(QStackedWidget):
         self.initUI()
 
     def initUI(self):
+        # Создание виджетов для отображения категорий, подсказок и т. д.
         self.category_view = CategoryView(self.root, self, self.model)
         self.clue_view = ClueView(self.root, self, self.model)
         self.final_jep_view = FinalJepView(self.root, self, self.model)
         self.winner_view = WinnerView(self.root, self, self.model)
 
+        # Создание виджетов с изображениями и установка их свойств
         self.sj_card = QLabel(self)
         self.sj_card.setPixmap(QPixmap("resources/img/jeopardy.jpg"))
         self.sj_card.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -60,6 +66,7 @@ class Board(QStackedWidget):
         self.fj_card.resize(self.width(), self.height())
         self.fj_card.show()
 
+        # Добавление виджетов в стековый виджет
         self.addWidget(self.category_view)
         self.addWidget(self.clue_view)
         self.addWidget(self.final_jep_view)
@@ -69,19 +76,24 @@ class Board(QStackedWidget):
         self.addWidget(self.dd_card)
         self.addWidget(self.fj_card)
 
+        # Установка стилей и отображение доски
         self.setStyleSheet("background-color: black;")
         self.show_categories()
         self.show()
 
+    # Отображение категорий
     def show_categories(self):
         self.curr_index = self.CAT_IND
         self.setCurrentIndex(self.curr_index)
 
+    # Отображение подсказки
     def show_clue(self, i, j):
+        # Установка текущей подсказки
         self.model.curr_clue_row = i
         self.model.curr_clue_col = j
         self.model.curr_clue_value = \
                 (self.model.curr_clue_row+1) * self.model.base_clue_value
+        # Заполнение подсказки в соответствии с моделью
         self.clue_view.populate_clue(self.model.clues[i][j].question,
                                      self.model.clues[i][j].answer)
         if self.model.clues[i][j].daily_double:
@@ -91,14 +103,17 @@ class Board(QStackedWidget):
             self.curr_index = self.CLUE_IND
             self.setCurrentIndex(self.curr_index)
 
+    # Отображение финального вопроса
     def show_final_jep(self):
         self.curr_index = self.FJ_IND
         self.setCurrentIndex(self.curr_index)
 
+    # Отображение победителя
     def show_winner(self):
         self.curr_index = self.WINNER_IND
         self.setCurrentIndex(self.curr_index)
 
+    # Отображение определенной карточки (изображения)
     def show_card(self, ind):
         if ind == self.SJ_CARD:
             self.curr_index = self.SJ_CARD
@@ -110,6 +125,7 @@ class Board(QStackedWidget):
             self.curr_index = self.FJ_CARD
         self.setCurrentIndex(self.curr_index)
 
+    # Обновление виджета
     def update(self, new_round):
         if new_round:
             if self.model.round == 1:
@@ -123,55 +139,41 @@ class Board(QStackedWidget):
         self.final_jep_view.update()
         self.winner_view.update()
 
+
     def keyPressEvent(self, event):
         s = event.text()
-        if not self.model.wager_mode:
-            if s.isdigit():
-                if 1 <= int(s) <= len(self.model.players):
-                    self.model.curr_player = int(s)-1
-            elif s == 'k':
-                self.model.correct_answer()
-                self.root.update()
-            elif s == 'j':
-                self.model.incorrect_answer()
-                self.root.update()
-            elif s == 'n':
-                if self.curr_index == self.SJ_CARD or self.curr_index == self.DJ_CARD:
-                    self.show_categories()
-                elif self.curr_index == self.DD_CARD:
-                    self.curr_index = self.CLUE_IND
-                elif self.curr_index == self.FJ_CARD:
-                    self.show_final_jep()
-                    self.model.play_sound('final_jep')
-                self.setCurrentIndex(self.curr_index)
-            elif s == 'q':
-                self.model.exit_game()
-            elif s == 'w':
-                self.model.wager_mode = True
-            elif s == '!':
-                self.model.reset_score()
-                self.root.update()
-        else:
-            if s.isdigit():
-                self.model.update_wager(int(s))
-            elif s == 'k':
-                self.model.correct_wager()
-                self.root.update()
-            elif s == 'j':
-                self.model.incorrect_wager()
-                self.root.update()
-            elif s == 'n':
-                if self.curr_index == self.SJ_CARD or self.curr_index == self.DJ_CARD:
-                    self.show_categories()
-                elif self.curr_index == self.DD_CARD:
-                    self.curr_index = self.CLUE_IND
-                elif self.curr_index == self.FJ_CARD:
-                    self.show_final_jep()
-                    self.model.play_sound('final_jep')
-                self.setCurrentIndex(self.curr_index)
-            elif s == 'q':
-                self.model.exit_game()
-            elif s == 'c':
-                self.model.reset_wager()
-            elif s == 'w':
-                self.model.wager_mode = False
+        try:
+            if not self.model.wager_mode:
+                if s.isdigit():
+                    if 1 <= int(s) <= len(self.model.players):
+                        self.model.curr_player = int(s) - 1
+                elif keyboard.is_pressed('k') or keyboard.is_pressed('л'):
+                    self.model.correct_answer()
+                    self.root.update()
+                elif keyboard.is_pressed('j') or keyboard.is_pressed('о'):
+                    self.model.incorrect_answer()
+                    self.root.update()
+                elif keyboard.is_pressed('!'):
+                    self.model.reset_score()
+                    self.root.update()
+                elif keyboard.is_pressed('q') or keyboard.is_pressed('й'):
+                    confirm_exit = QMessageBox.question(self, 'Подтвердите выход', 'Вы действительно хотите выйти из игры?',
+                                                        QMessageBox.Yes | QMessageBox.No)
+                    if confirm_exit == QMessageBox.Yes:
+                        self.model.exit_game()
+            else:
+                if s.isdigit():
+                    self.model.update_wager(int(s))
+                elif keyboard.is_pressed('k') or keyboard.is_pressed('л'):
+                    self.model.correct_wager()
+                    self.root.update()
+                elif keyboard.is_pressed('j') or keyboard.is_pressed('о'):
+                    self.model.incorrect_wager()
+                    self.root.update()
+                elif keyboard.is_pressed('c') or keyboard.is_pressed('с'):
+                    self.model.reset_wager()
+                elif keyboard.is_pressed('w') or keyboard.is_pressed('ц'):
+                    self.model.wager_mode = False
+        except ValueError:
+            # Обработка исключения, если клавиша не задействована или не сопоставлена
+            pass 

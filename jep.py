@@ -2,13 +2,17 @@
 #
 # The main Jep program
 import sys
+import keyboard
 
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QApplication
 from game import Game
 from view import View
 
 def main():
-    print("Welcome to Jep!")
+    print("Добро пожаловать в Свою Игру!")
 
     # Initialize GUI
     jep = QApplication([])

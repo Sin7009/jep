@@ -1,0 +1,10 @@
+import sys
+from PyInstaller import __main__ as pyi_main
+
+pyi_main.run([
+    'jep.py',
+    '--onefile',
+    '--name=Своя Игра',
+    '--windowed',
+    '--noconfirm'
+])

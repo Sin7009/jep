@@ -2,7 +2,7 @@
 #
 # The widget for viewing the player
 from functools import partial
-
+import keyboard
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -41,20 +41,27 @@ class PlayerBarWidget(QWidget):
 
     def keyPressEvent(self, event):
         s = event.text()
-        if s.isdigit():
-            if 1 <= int(s) <= len(self.controller.model.players):
-                self.model.curr_player = int(s)-1
-        elif s == 'k':
-            self.model.correct_answer()
-            self.root.update()
-        elif s == 'j':
-            self.model.incorrect_answer()
-            self.root.update()
-        elif s == '!':
-            self.model.reset_score()
-            self.root.update()
-        elif s == 'q':
-            QCoreApplication.quit()
+        try:
+            if s.isdigit():
+                if 1 <= int(s) <= len(self.controller.model.players):
+                    self.model.curr_player = int(s)-1
+            elif s == 'k':
+                self.model.correct_answer()
+                self.root.update()
+            elif s == 'j':
+                self.model.incorrect_answer()
+                self.root.update()
+            elif s == '!':
+                self.model.reset_score()
+                self.root.update()
+            elif keyboard.is_pressed('q') or keyboard.is_pressed('й'):
+                confirm_exit = QMessageBox.question(self, 'Подтвердите выход', 'Вы действительно хотите выйти из игры?',
+                                                    QMessageBox.Yes | QMessageBox.No)
+                if confirm_exit == QMessageBox.Yes:
+                    self.model.exit_game()
+        except ValueError:
+            # Обработка исключения, если клавиша не задействована или не сопоставлена
+            pass 
 
 
 
@@ -68,7 +75,7 @@ class PlayerWidget(QWidget):
     def initUI(self):
         self.layout = QVBoxLayout()
 
-        self.score_label = QLabel("${}".format(self.score))
+        self.score_label = QLabel("₽{}".format(self.score))
         score_font = self.score_label.font()
         score_font.setPointSize(32)
         self.score_label.setFont(score_font)
@@ -93,7 +100,7 @@ class PlayerWidget(QWidget):
         self.score = score
         if score < 0:
             self.score_label.setStyleSheet("color: red;")
-            self.score_label.setText("-${}".format(self.score * -1))
+            self.score_label.setText("-₽{}".format(self.score * -1))
         else:
             self.score_label.setStyleSheet("color: white;")
-            self.score_label.setText("${}".format(self.score))
+            self.score_label.setText("₽{}".format(self.score))
