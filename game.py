@@ -7,7 +7,8 @@ import random
 import subprocess
 from threading import Timer
 
-from PyQt5.QtCore import QCoreApplication
+from PyQt6.QtCore import QCoreApplication
+
 
 import data as gd
 

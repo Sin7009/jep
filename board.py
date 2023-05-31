@@ -2,11 +2,9 @@
 #
 # The view for Jep board
 # Импорт необходимых модулей и классов
-from PyQt5.QtWidgets import QLabel, QStackedWidget
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap
-import keyboard
-import pyperclip
+from PyQt6.QtWidgets import QLabel, QStackedWidget, QMessageBox
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap
 
 from category_view import CategoryView
 from clue_view import ClueView
@@ -91,11 +89,9 @@ class Board(QStackedWidget):
         # Установка текущей подсказки
         self.model.curr_clue_row = i
         self.model.curr_clue_col = j
-        self.model.curr_clue_value = \
-                (self.model.curr_clue_row+1) * self.model.base_clue_value
+        self.model.curr_clue_value = (self.model.curr_clue_row + 1) * self.model.base_clue_value
         # Заполнение подсказки в соответствии с моделью
-        self.clue_view.populate_clue(self.model.clues[i][j].question,
-                                     self.model.clues[i][j].answer)
+        self.clue_view.populate_clue(self.model.clues[i][j].question, self.model.clues[i][j].answer)
         if self.model.clues[i][j].daily_double:
             self.model.play_sound('daily_double')
             self.show_card(self.DD_CARD)
@@ -138,42 +134,3 @@ class Board(QStackedWidget):
         self.clue_view.update()
         self.final_jep_view.update()
         self.winner_view.update()
-
-
-    def keyPressEvent(self, event):
-        s = event.text()
-        try:
-            if not self.model.wager_mode:
-                if s.isdigit():
-                    if 1 <= int(s) <= len(self.model.players):
-                        self.model.curr_player = int(s) - 1
-                elif keyboard.is_pressed('k') or keyboard.is_pressed('л'):
-                    self.model.correct_answer()
-                    self.root.update()
-                elif keyboard.is_pressed('j') or keyboard.is_pressed('о'):
-                    self.model.incorrect_answer()
-                    self.root.update()
-                elif keyboard.is_pressed('!'):
-                    self.model.reset_score()
-                    self.root.update()
-                elif keyboard.is_pressed('q') or keyboard.is_pressed('й'):
-                    confirm_exit = QMessageBox.question(self, 'Подтвердите выход', 'Вы действительно хотите выйти из игры?',
-                                                        QMessageBox.Yes | QMessageBox.No)
-                    if confirm_exit == QMessageBox.Yes:
-                        self.model.exit_game()
-            else:
-                if s.isdigit():
-                    self.model.update_wager(int(s))
-                elif keyboard.is_pressed('k') or keyboard.is_pressed('л'):
-                    self.model.correct_wager()
-                    self.root.update()
-                elif keyboard.is_pressed('j') or keyboard.is_pressed('о'):
-                    self.model.incorrect_wager()
-                    self.root.update()
-                elif keyboard.is_pressed('c') or keyboard.is_pressed('с'):
-                    self.model.reset_wager()
-                elif keyboard.is_pressed('w') or keyboard.is_pressed('ц'):
-                    self.model.wager_mode = False
-        except ValueError:
-            # Обработка исключения, если клавиша не задействована или не сопоставлена
-            pass 

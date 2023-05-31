@@ -2,10 +2,9 @@
 #
 # The widget for viewing the player
 from functools import partial
-import keyboard
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtCore import *
+from PyQt6.QtGui import *
 
 class PlayerBarWidget(QWidget):
     def __init__(self, root, parent, model):
@@ -39,32 +38,6 @@ class PlayerBarWidget(QWidget):
             else:
                 self.player_widgets[i].setStyleSheet("background-color:#060CE9")
 
-    def keyPressEvent(self, event):
-        s = event.text()
-        try:
-            if s.isdigit():
-                if 1 <= int(s) <= len(self.controller.model.players):
-                    self.model.curr_player = int(s)-1
-            elif s == 'k':
-                self.model.correct_answer()
-                self.root.update()
-            elif s == 'j':
-                self.model.incorrect_answer()
-                self.root.update()
-            elif s == '!':
-                self.model.reset_score()
-                self.root.update()
-            elif keyboard.is_pressed('q') or keyboard.is_pressed('й'):
-                confirm_exit = QMessageBox.question(self, 'Подтвердите выход', 'Вы действительно хотите выйти из игры?',
-                                                    QMessageBox.Yes | QMessageBox.No)
-                if confirm_exit == QMessageBox.Yes:
-                    self.model.exit_game()
-        except ValueError:
-            # Обработка исключения, если клавиша не задействована или не сопоставлена
-            pass 
-
-
-
 class PlayerWidget(QWidget):
     def __init__(self, name, score):
         super().__init__()
@@ -79,7 +52,7 @@ class PlayerWidget(QWidget):
         score_font = self.score_label.font()
         score_font.setPointSize(32)
         self.score_label.setFont(score_font)
-        self.score_label.setAlignment(Qt.AlignCenter)
+        self.score_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.score_label.setStyleSheet("color: white;")
 
         self.name_label = QLineEdit()
@@ -87,7 +60,7 @@ class PlayerWidget(QWidget):
         name_font.setPointSize(32)
         self.name_label.setFont(name_font)
         self.name_label.setText(self.name)
-        self.name_label.setAlignment(Qt.AlignCenter)
+        self.name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.name_label.setStyleSheet("color: white;")
 
         self.layout.addWidget(self.score_label)

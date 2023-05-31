@@ -1,15 +1,11 @@
 # category_view.py
 #
 # Category view for the stack window
-# Импортируем необходимые модули и классы
 from functools import partial
 
-import keyboard
-import pyperclip
-
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtCore import *
+from PyQt6.QtGui import *
 
 import game
 
@@ -30,10 +26,7 @@ class CategoryView(QWidget):
         # Создание виджета и размещение в нем элементов с помощью сетки
         self.widget = QWidget()
         self.layout = QGridLayout(self.widget)
-        self.widget = QWidget()
-        self.layout = QGridLayout(self.widget)
-        font_db = QFontDatabase()
-        _id = font_db.addApplicationFont("./resources/fonts/swiss-911.ttf")
+        QFontDatabase.addApplicationFont('./resources/fonts/swiss-911.ttf')
         font = QFont("Swiss911 UCm BT", 36)
         # Добавление меток категорий в сетку
         # Установка шрифта и стилей для каждой метки
@@ -41,8 +34,8 @@ class CategoryView(QWidget):
         for i in range(len(self.model.categories)):
             p = (0, i)
             cat_label = QLabel(self.model.categories[i])
-            cat_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            cat_label.setAlignment(Qt.AlignCenter)
+            cat_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            cat_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             cat_label.setWordWrap(True)
             cat_label.setStyleSheet("color: white;")
             self.layout.addWidget(cat_label, *p)
@@ -67,7 +60,7 @@ class CategoryView(QWidget):
                 button.setFont(font)
                 button.setStyleSheet("color: #FFCC00;")
                 button.clicked.connect(partial(self.parent.show_clue, i, j))
-                button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
                 self.layout.addWidget(button, *p)
                 self.button_widgets[i][j] = button
 
@@ -95,32 +88,3 @@ class CategoryView(QWidget):
                     self.button_widgets[i][j].setText("₽{}".format((i+1) * game.CLUE_MULT * self.model.round))
                     self.button_widgets[i][j].setEnabled(True)
                     self.button_widgets[i][j].setStyleSheet("background-color: #060CE9; color: #FFCC00")
-
-    # Обработчик событий нажатия клавиш
-    def keyPressEvent(self, event):
-        s = event.text()
-        try:
-            if s.isdigit():
-                # Если нажата цифровая клавиша, выбрать текущего игрока
-                if 1 <= int(s) <= len(self.model.players):
-                    self.model.curr_player = int(s) - 1
-            elif keyboard.is_pressed('k') or keyboard.is_pressed('л'):
-                # Если нажата клавиша 'k' или 'л', обработать правильный ответ
-                self.model.correct_answer()
-                self.root.update()
-            elif keyboard.is_pressed('j') or keyboard.is_pressed('о'):
-                # Если нажата клавиша 'j' или 'о', обработать неправильный ответ
-                self.model.incorrect_answer()
-                self.root.update()
-            elif keyboard.is_pressed('!'):
-                # Если нажата клавиша '!', сбросить счет
-                self.model.reset_score()
-                self.root.update()
-            elif keyboard.is_pressed('q') or keyboard.is_pressed('й'):
-                confirm_exit = QMessageBox.question(self, 'Подтвердите выход', 'Вы действительно хотите выйти из игры?',
-                                                    QMessageBox.Yes | QMessageBox.No)
-                if confirm_exit == QMessageBox.Yes:
-                    self.model.exit_game()
-        except ValueError:
-            # Обработка исключения, если клавиша не задействована или не сопоставлена
-            pass 
